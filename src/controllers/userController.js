@@ -40,7 +40,7 @@ export async function signIn(req, res){
             const token = uuid();
             const userId = result.rows[0].id;
             await db.query(`
-                INSERT INTO tokens ('userId', value)
+                INSERT INTO tokens ("userId", token)
                 VALUES ($1, $2)`, [userId, token]);
             return res.status(200).send(token);
         } else{

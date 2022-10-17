@@ -10,11 +10,7 @@ export async function shortenUrl(req, res){
 
     try {
         const result = await db.query(`SELECT * FROM tokens WHERE token = $1`, [token]);
-        console.log(result.rows[0].userId)
-
-        if(!result){
-            return res.status(401).send("TOKEN INVÁLIDO!")
-        }
+ 
         await db.query(`
             INSERT INTO links (link, "linkShort", "userId", visits)
             VALUES ($1, $2, $3, $4)`, [link, linkShort, result.rows[0].userId, 0])
@@ -22,5 +18,21 @@ export async function shortenUrl(req, res){
     } catch (error) {
         console.log(error);
         return res.sendStatus(500);
+    }
+}
+
+export async function getUrlId(req, res){
+    const { id } = req.params;
+
+    try {
+        const result = (await db.query(`
+        SELECT id, "linkShort", link FROM links WHERE id = $1`, [id])).rows[0];
+        if(!result){
+            return res.sendStatus(404);
+        }
+        return res.status(200).send(result);
+    } catch (error) {
+        console.log(error);
+        return res.sendStatus(500)
     }
 }

@@ -95,3 +95,15 @@ export async function dataUser(req, res){
         return res.sendStatus(500)
     }
 }
+
+export async function ranking(req, res){
+    try {
+        const ranking = (await db.query(`
+            SELECT users.id, users.name, COUNT(links.id) AS "linksCount", SUM(links.visits) AS "visitCount"
+            FROM users JOIN links ON users.id = links."userId" GROUP BY users.id ORDER BY "visitCount" DESC LIMIT(10)`)).rows;
+        return res.status(200).send(ranking);
+    } catch (error) {
+        console.log(error);
+        return res.sendStatus(500)
+    }
+}

@@ -67,7 +67,6 @@ export async function deleteUrl(req, res){
     try {
         const result = (await db.query(`
             SELECT * FROM tokens WHERE token = $1`, [token])).rows[0];
-            console.log(result)
         const userShortLink = (await db.query(`
             SELECT * FROM links WHERE id = $1`, [id])).rows[0];
         if(!result){

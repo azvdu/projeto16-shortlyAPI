@@ -51,3 +51,47 @@ export async function signIn(req, res){
         return res.sendStatus(500)
     }
 }
+
+export async function dataUser(req, res){
+    const { authorization } = req.headers;
+    const token = authorization?.replace("Bearer ", "");
+
+    try {
+        const validToken = (await db.query(`
+            SELECT * FROM tokens WHERE token = $1`, [token])).rows[0];
+
+        if(!validToken){
+            return res.sendStatus(401)
+        }
+
+        const result = (await db.query(`
+            SELECT * FROM links WHERE "userId" = $1`, [validToken.userId])).rows
+
+        const user = (await db.query(`
+            SELECT * FROM users WHERE id = $1`, [validToken.userId])).rows[0]
+
+        const body = {
+            id: user.id,
+            name: user.name,
+            visitCount: 0,
+            shortenedUrls: []
+
+        }
+        body.shortenedUrls = result.map((result) => ({
+            id: result.id,
+			shortUrl: result.linkShort,
+			url: result.link,
+			visitCount: result.visits
+        }))
+
+        for (let i = 0; i < body.shortenedUrls.length; i++) {
+            body.visitCount += body.shortenedUrls[i].visitCount
+        }
+
+        return res.status(200).send(body);
+
+    } catch (error) {
+        console.log(error);
+        return res.sendStatus(500)
+    }
+}
